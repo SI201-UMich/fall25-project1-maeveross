@@ -1,11 +1,12 @@
 
 # name: Maeve Ross
-# uniqname + number: maever 40315854
+# uniqname + number: maever + 40315854
 # name of dataset: penguins.csv
 # columns working with: species, island, flipper_length_mm, sex          
 # calculations to be performed: 
 #.          1 - Which species had the greatest flipper length?
 #           2 - How many females were on each island? 
+# diagrams are in submission #2 from figma link
 
 def get_file (file1):
     open_file = open (file1, 'r')
