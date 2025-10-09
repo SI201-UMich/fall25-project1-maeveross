@@ -60,27 +60,21 @@ def load_penguin_data (file1):
 peng = load_penguin_data ('penguins.csv')
 print (peng)
 
-# if len(row) == 9:
-#             entry_num = row[0]
-#             species = row[1]
-#             island = row[2]
-#             bill_length = float(row[3])
-#             bill_depth = float(row[4])
-#             flipper_length = float(row[5])
-#             body_mass = float(row[6])
-#             sex = row[7]
-#             year = int(row[8])
+def get_flipper_lengths(penguins):
+    # Creates a dictionary grouping all flipper lengths by species.
+    flipper_data = {}
 
-#             year_d = {}
-#             year_d[headers[1]] = species
-#             year_d[headers[2]] = island
-#             year_d[headers[3]] = bill_length
-#             year_d[headers[4]] = bill_depth
-#             year_d[headers[5]] = flipper_length
-#             year_d[headers[6]] = body_mass
-#             year_d[headers[7]] = sex
-#             year_d[headers[8]] = year
-#             penguins[entry_num] = year_d
+    for penguin in penguins:
+        species = penguin.get("species")
+        flipper_length = penguin.get("flipper_length_mm")
 
+        #include valid numeric flipper lengths
+        if species and flipper_length is not None:
+            if species not in flipper_data:
+                flipper_data[species] = []
+            flipper_data[species].append(flipper_length)
 
+    return flipper_data
+peng2 = get_flipper_lengths(peng)
+print (peng2)
 
