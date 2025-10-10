@@ -31,23 +31,15 @@ def load_penguin_data (file1):
 
             # convert numbers where possible
             if key in ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]:
-                if value.isdigit():  # checks if it’s a valid float string
-                    penguin[key] = float(value) 
-                else:
+                try:
+                    penguin[key] = float(value)
+                except ValueError:
                     penguin[key] = None
-
             elif key == "year":
-                if value.isdigit():
+                try:
                     penguin[key] = int(value)
-                else:
+                except ValueError:
                     penguin[key] = None
-
-            elif key == "id":  # make sure ID stays as string or int
-                if value.isdigit():
-                    penguin[key] = int(value)
-                else:
-                    penguin[key] = value
-
             else:
                 penguin[key] = value
 
@@ -57,6 +49,9 @@ def load_penguin_data (file1):
     return penguins
         
 # print (peng)
+
+
+
 
 def get_flipper_lengths(penguins):
     # Creates a dictionary grouping all flipper lengths by species.
@@ -73,7 +68,9 @@ def get_flipper_lengths(penguins):
             flipper_data[species].append(flipper_length)
 
     return flipper_data
-# print (peng2)
+# print (load_penguin_data)
+
+
 
 def find_max_flipper (flipper_data):
     species_max = {}
@@ -100,6 +97,9 @@ def find_max_flipper (flipper_data):
     }
 
     return max_species
+
+
+
 def generate_report(max_species):
 
     species = max_species.get("species")
@@ -111,13 +111,96 @@ def generate_report(max_species):
         print(f"Maximum flipper length: {flipper_length} mm\n")
     else:
         print("No valid flipper length data available.")
-    with open("flipper_report.txt", "w") as f:
+
+    
+    report_name = "flipper_report.txt"
+
+    with open(report_name, "w") as f:
         f.write(f"The species with the greatest flipper length is: {species}\n")
         f.write(f"Maximum flipper length: {flipper_length} mm\n")
         print (f)
+    
+    
+    with open(report_name, "r") as f:
+        contents = f.read()
+    # return contents
 
 # calling every function
 penguins = load_penguin_data('penguins.csv')
 flipper_data = get_flipper_lengths(penguins)
 max_species = find_max_flipper(flipper_data)
 generate_report(max_species)
+
+
+
+# second calculation: how many female penguins are on each island?
+def load_penguin_data (file1):
+    open_file = open (file1, 'r')
+    file_content = csv.reader(open_file)
+    print (file_content) #iterator that reads each row of your CSV file as a list of strings
+    headers = next(file_content) # list of names of columns
+    # print (headers)
+    # get each entry as a list
+    if headers[0].strip() == "":
+        headers[0] = "id"
+
+    penguins = []
+    for row in file_content:
+        if not row:
+            continue
+        # print (row)
+        penguin = {}
+        for i in range(len(headers)):
+            key = headers[i]
+            value = row[i].strip()
+
+            # convert numbers where possible
+            if key in ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]:
+                if value.isdigit():  # checks if it’s a valid float string
+                    penguin[key] = float(value) 
+                else:
+                    penguin[key] = None
+
+            elif key == "year":
+                if value.isdigit():
+                    penguin[key] = int(value)
+                else:
+                    penguin[key] = None
+
+            elif key == "id":  # make sure ID stays as string or int
+                if value.isdigit():
+                    penguin[key] = int(value)
+                else:
+                    penguin[key] = value
+
+            else:
+                penguin[key] = value
+
+        penguins.append(penguin)
+
+    open_file.close()
+    return penguins
+
+
+
+def filter_penguins(penguins):
+    female = []
+    for penguin in penguins: 
+        sex = penguin.get("sex", "").strip().lower()
+        if sex == "female":
+            female.append(penguin)
+    
+    print (female)
+    return female
+
+def count_females_by_island(female):
+    female_counts = {}
+
+    for penguin in female:
+        island = penguin.get("island", "").strip()
+        if island not in female_counts:
+            female_counts[island] = 1
+        else:
+            female_counts[island] += 1
+
+    return female_counts
