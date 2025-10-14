@@ -48,8 +48,6 @@ def load_penguin_data (file1):
     open_file.close()
     return penguins
         
-# print (peng)
-
 
 
 
@@ -100,88 +98,35 @@ def find_max_flipper (flipper_data):
 
 
 
-def generate_report(max_species):
-
+def generate_flipper_report(max_species):
     species = max_species.get("species")
     flipper_length = max_species.get("max_flipper_length")
 
     if species and flipper_length:
-
-        print(f"The species with the greatest flipper length is: {species}")
-        print(f"Maximum flipper length: {flipper_length} mm\n")
+        print(f"The species with the greatest flipper length is {species} with a flipper length of {flipper_length}\n")
     else:
         print("No valid flipper length data available.")
 
-    
     report_name = "flipper_report.txt"
 
     with open(report_name, "w") as f:
-        f.write(f"The species with the greatest flipper length is: {species}\n")
-        f.write(f"Maximum flipper length: {flipper_length} mm\n")
-        print (f)
+        f.write(f"The species with the greatest flipper length is {species} with a flipper length of {flipper_length} \n")
     
     
     with open(report_name, "r") as f:
         contents = f.read()
     # return contents
 
-# calling every function
-penguins = load_penguin_data('penguins.csv')
-flipper_data = get_flipper_lengths(penguins)
-max_species = find_max_flipper(flipper_data)
-generate_report(max_species)
+# commented out every function because main() will call it all 
+# penguins = load_penguin_data('penguins.csv')
+# flipper_data = get_flipper_lengths(penguins)
+# max_species = find_max_flipper(flipper_data)
+# generate_report(max_species)
 
 
 
 # second calculation: how many female penguins are on each island?
-def load_penguin_data (file1):
-    open_file = open (file1, 'r')
-    file_content = csv.reader(open_file)
-    print (file_content) #iterator that reads each row of your CSV file as a list of strings
-    headers = next(file_content) # list of names of columns
-    # print (headers)
-    # get each entry as a list
-    if headers[0].strip() == "":
-        headers[0] = "id"
-
-    penguins = []
-    for row in file_content:
-        if not row:
-            continue
-        # print (row)
-        penguin = {}
-        for i in range(len(headers)):
-            key = headers[i]
-            value = row[i].strip()
-
-            # convert numbers where possible
-            if key in ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]:
-                if value.isdigit():  # checks if it’s a valid float string
-                    penguin[key] = float(value) 
-                else:
-                    penguin[key] = None
-
-            elif key == "year":
-                if value.isdigit():
-                    penguin[key] = int(value)
-                else:
-                    penguin[key] = None
-
-            elif key == "id":  # make sure ID stays as string or int
-                if value.isdigit():
-                    penguin[key] = int(value)
-                else:
-                    penguin[key] = value
-
-            else:
-                penguin[key] = value
-
-        penguins.append(penguin)
-
-    open_file.close()
-    return penguins
-
-
+# we will call the same opening file definition at the end, no need to define it twice 
 
 def filter_penguins(penguins):
     female = []
@@ -190,17 +135,70 @@ def filter_penguins(penguins):
         if sex == "female":
             female.append(penguin)
     
-    print (female)
+    # print (female)
     return female
 
 def count_females_by_island(female):
     female_counts = {}
-
     for penguin in female:
         island = penguin.get("island", "").strip()
-        if island not in female_counts:
-            female_counts[island] = 1
-        else:
-            female_counts[island] += 1
+        if island:
+            female_counts[island] = female_counts.get(island, 0) + 1
 
-    return female_counts
+    # Find the island with the most female penguins
+    if female_counts:
+        max_island = max(female_counts, key=female_counts.get)
+        max_count = female_counts[max_island]
+    else:
+        max_island = None
+        max_count = 0
+
+    return female_counts, {"island": max_island, "count": max_count}
+
+
+def generate_female_report(female_counts):
+    if not female_counts:
+        print("No female penguin data available.")
+        return
+
+    # Print each island and its count
+    for island, count in female_counts.items():
+        print(f"{island}: {count}")
+
+    # Find island with the most females — no hardcoding
+    max_island1 = None
+    max_count1 = 0
+
+    for island, count in female_counts.items():
+        if isinstance(count, (int, float)) and count > max_count1:
+            max_count1 = count
+            max_island1 = island
+
+    print(f"\nThe island with the greatest female penguin population is {max_island1}, with ({max_count1} females).")
+
+    with open("female_penguin_report.txt", "w") as f:
+        f.write("Female Penguin Counts by Island:\n")
+        for island, count in female_counts.items():
+            f.write(f"{island}: {count}\n")
+        f.write(f"\nThe island with the greatest female penguin population is {max_island1}, with ({max_count1} females).\n")
+
+
+
+# calling every function
+def main():
+    penguins = load_penguin_data("penguins.csv")
+
+    # Calculation 1
+    flipper_data = get_flipper_lengths(penguins)
+    max_species = find_max_flipper(flipper_data)
+    generate_flipper_report(max_species)
+
+    # Calculation 2
+    female_penguins = filter_penguins(penguins)
+    female_counts, max_island1 = count_females_by_island(female_penguins)  # ← unpack both values
+    generate_female_report(female_counts)
+
+
+# Run main
+if __name__ == "__main__":
+    main()
