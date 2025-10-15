@@ -1,0 +1,6 @@
+Female Penguin Counts by Island:
+Torgersen: 24
+Biscoe: 80
+Dream: 61
+
+The island with the greatest female penguin population is Biscoe, with (80 females).
