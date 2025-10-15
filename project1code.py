@@ -7,6 +7,7 @@
 #.          1 - Which species had the greatest flipper length?
 #           2 - How many females were on each island? 
 # diagrams are in submission #2 from figma link
+# I used AI pretty heavily in this project to help debug and point out why errors were occuring in my function. I also asked Chat to help break down each calculation into 4 different functions because I was unsure where to start. 
 import csv 
 
 def load_penguin_data (file1):
@@ -52,7 +53,7 @@ def load_penguin_data (file1):
 
 
 def get_flipper_lengths(penguins):
-    # Creates a dictionary grouping all flipper lengths by species.
+    # Creates a dictionary where keys are species and values are a list of  all flipper lengths belonging to that species
     flipper_data = {}
 
     for penguin in penguins:
@@ -64,23 +65,26 @@ def get_flipper_lengths(penguins):
             if species not in flipper_data:
                 flipper_data[species] = []
             flipper_data[species].append(flipper_length)
-
+    
+        # print (flipper_data)
     return flipper_data
-# print (load_penguin_data)
+    
 
 
 
 def find_max_flipper (flipper_data):
+    # prints a dictionary where keys are the species and the values are the max flipper length found from the flipper_data dict above
     species_max = {}
 
     for key, val in flipper_data.items():
         if val:  # make sure list is not empty
             species_max[key] = max(val)
+    print (species_max)
 
     # Find species with the greatest flipper length overall
     overall_species = ''
     overall_length = 0
-
+    # loops through the dictionary with the max flipper lengths for each species and finds the greatest of all species
     for species in species_max:
         flipper_length = species_max[species]
 
@@ -88,12 +92,12 @@ def find_max_flipper (flipper_data):
             overall_length = flipper_length
             overall_species = species
 
-    # Step 3: store result in a dictionary
+    # Store result in a dictionary 
     max_species = {
         "species": overall_species,
         "max_flipper_length": overall_length
     }
-
+    print (max_species)
     return max_species
 
 
@@ -174,9 +178,11 @@ def generate_female_report(female_counts):
             max_count1 = count
             max_island1 = island
 
-    print(f"\nThe island with the greatest female penguin population is {max_island1}, with ({max_count1} females).")
+    print(f"\nThe island with the greatest female penguin population is {max_island1}, with {max_count1} females.")
 
-    with open("female_penguin_report.txt", "w") as f:
+    female_report_name = "female_penguin_report.txt"
+
+    with open(female_report_name, "w") as f:
         f.write("Female Penguin Counts by Island:\n")
         for island, count in female_counts.items():
             f.write(f"{island}: {count}\n")
@@ -202,3 +208,169 @@ def main():
 # Run main
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+import unittest
+
+class TestGetFlipperLengths(unittest.TestCase):
+    # use sample of csv data 
+
+    def setUp(self):
+        self.sample_penguins = [
+            {"species": "Adelie", "island": "Torgersen", "flipper_length_mm": 181.0, "sex": "male"},
+            {"species": "Gentoo", "island": "Biscoe", "flipper_length_mm": 230.0, "sex": "female"},
+            {"species": "Chinstrap", "island": "Dream", "flipper_length_mm": None, "sex": "female"},
+            {"species": "Adelie", "island": "Torgersen", "flipper_length_mm": 190.0, "sex": "female"},
+            {"species": "Gentoo", "island": "Biscoe", "flipper_length_mm": 217.0, "sex": None},
+            ]
+        
+    # test get_flipper_lengths(penguins)
+
+    # Usual : Checks correct grouping of flipper lengths by species
+    def test_general_species_keys(self):
+        result = get_flipper_lengths(self.sample_penguins)
+        # True if expected species are present
+        contains_a = "Adelie" in result
+        contains_g = "Gentoo" in result
+        self.assertTrue(contains_a)
+        self.assertTrue(contains_g)
+
+    # Usual : Ensure each value type is a list
+    def test_general_values_type(self):
+        result = get_flipper_lengths(self.sample_penguins)
+        for v in result.values():
+            self.assertTrue(isinstance(v, list))
+
+
+    # Edge: Handle missing flipper length (None value)
+    def test_edge_no_flipper_value(self):
+        result = get_flipper_lengths(self.sample_penguins)
+        self.assertFalse(None in result.get("Chinstrap", []))  # should skip None
+
+
+
+    # Edge: Handle missing species name (empty string)
+    def test_edge_empty_input(self):
+        result = get_flipper_lengths(self.sample_penguins)
+        self.assertFalse("" in result)
+
+
+
+
+class TestFindMaxFlipper(unittest.TestCase):
+
+    # test cases for find_max_flipper(flipper_data)
+
+    # Usual: verifies correct species is returned when comparing valid numeric data.
+    def test_general_max_species_value(self):
+        flipper_data = {"Adelie": [181.0, 190.0], "Gentoo": [230.0, 217.0]}
+        result = find_max_flipper(flipper_data)
+        self.assertTrue(result["species"] == "Gentoo")
+
+
+    # Usual: checks that maximum flipper length value is computed accurately.
+    def test_general_max_length_float(self):
+        flipper_data = {"Adelie": [181.0, 190.0], "Gentoo": [230.0, 217.0]}
+        result = find_max_flipper(flipper_data)
+        self.assertAlmostEqual(result["max_flipper_length"], 230.0)
+
+
+    # Edge: handles case where all species lists are empty — should not crash.
+    def test_edge_empty_dict(self):
+        flipper_data = {"Adelie": [], "Gentoo": []}
+        result = find_max_flipper(flipper_data)
+        self.assertFalse(result["species"])
+
+
+    # Edge: handles empty dictionary input — returns zero-length safely.
+    def test_edge_raises_type_error(self):
+        # Wrong type passed (not a dict)
+        flipper_data = {}
+        result = find_max_flipper(flipper_data)
+        self.assertTrue(result["max_flipper_length"] == 0)
+
+
+
+
+class TestFilterPenguins(unittest.TestCase):
+    def setUp(self):
+        self.sample_penguins = [
+            {"species": "Adelie", "island": "Torgersen", "flipper_length_mm": 181.0, "sex": "male"},
+            {"species": "Gentoo", "island": "Biscoe", "flipper_length_mm": 230.0, "sex": "female"},
+            {"species": "Chinstrap", "island": "Dream", "flipper_length_mm": 194.0, "sex": "female"},
+            {"species": "Adelie", "island": "Torgersen", "flipper_length_mm": 190.0, "sex": "female"},
+        ]
+    # test case for filter_penguins(penguins)
+
+    # Usual: ensures the correct number of female penguins are filtered.
+    def test_correct_count(self):
+        result = filter_penguins(self.sample_penguins)
+        self.assertTrue(len(result) == 3)
+
+    # Usual: confirms all returned penguins are female 
+    def test_general_all_females(self):
+        result = filter_penguins(self.sample_penguins)
+        all_females = all(p["sex"] == "female" for p in result)
+        self.assertTrue(all_females)
+
+
+    # Edge: handles case of empty input list gracefully.
+    def test_empty_list_input(self):
+        result = filter_penguins([])
+        self.assertTrue(len(result) == 0)
+
+
+    # Edge: handles missing sex field — should not cause errors.
+    def test_missing_sex_field(self):
+        data = [{"species": "Adelie", "island": "Dream"}]
+        result = filter_penguins(data)
+        self.assertTrue(len(result) == 0)
+
+
+class TestCountFemalesByIsland(unittest.TestCase):
+
+    # test case for count_females_by_island(female_penguins) 
+
+    def setUp(self):
+        self.sample_penguins = [
+            {"species": "Adelie", "island": "Torgersen", "flipper_length_mm": 181.0, "sex": "male"},
+            {"species": "Gentoo", "island": "Biscoe", "flipper_length_mm": 230.0, "sex": "female"},
+            {"species": "Chinstrap", "island": "Dream", "flipper_length_mm": 194.0, "sex": "female"},
+            {"species": "Adelie", "island": "Torgersen", "flipper_length_mm": 190.0, "sex": "female"},
+        ]
+
+    # Usual: ensures each island's female count is accurate.
+    def test_female_counts_match(self):
+        female_penguins = filter_penguins(self.sample_penguins)
+        counts, _ = count_females_by_island(female_penguins)
+        self.assertTrue(counts["Torgersen"] == 1)
+
+
+    # Usual: confirms output is a dictionary mapping islands to counts.
+    def test_returns_dict_type(self):
+        female_penguins = filter_penguins(self.sample_penguins)
+        counts, _ = count_females_by_island(female_penguins)
+        self.assertTrue(isinstance(counts, dict))
+
+
+    # Edge: tests case where no female penguins exist.
+    def test_no_females(self):
+        data = [{"island": "Dream", "sex": "MALE"}]
+        female_penguins = filter_penguins(data)
+        counts, _ = count_females_by_island(female_penguins)
+        self.assertTrue(len(counts) == 0)
+
+
+    # Edge: handles missing island field gracefully — should skip entry.
+    def test_missing_island_field(self):
+        data = [{"sex": "FEMALE"}]
+        female_penguins = filter_penguins(data)
+        counts, _ = count_females_by_island(female_penguins)
+        self.assertTrue(len(counts) == 0)
+
+if __name__ == "__main__":
+    unittest.main()
